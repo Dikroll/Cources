@@ -1,0 +1,21 @@
+FROM node:22-alpine
+
+# Устанавливаем системные зависимости + Yarn 4
+RUN apk add --no-cache vips-dev build-base python3 git \
+    && corepack enable \
+    && corepack prepare yarn@4.9.1 --activate
+
+WORKDIR /app
+
+# 1. Копируем конфигурационные файлы Yarn
+COPY .yarnrc.yml package.json yarn.lock ./
+COPY .yarn/ ./.yarn/
+
+# 2. Явно включаем node_modules для Docker
+RUN echo "nodeLinker: node-modules" >> .yarnrc.yml \
+    && yarn install
+
+COPY . .
+
+EXPOSE 3000
+CMD ["yarn", "dev"]
